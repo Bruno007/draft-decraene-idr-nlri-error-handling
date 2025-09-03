@@ -124,12 +124,12 @@ An UPDATE message with a malformed Treat-As-Withdraw attribute SHALL be handled 
 
 IANA is requested to allocate a new optional, non-transitive attribute called "Treat-As-Withdraw" from the BGP Path Attributes registry of the Border Gateway Protocol (BGP) Parameters group.
 
-
 | Value | Code | Reference |
-
 +:------|:-----|:----------|
-
 | TBD1  | Treat-As-Withdraw |(this doc) |
+
+
+
 
 # Security Considerations {#Security}
 
