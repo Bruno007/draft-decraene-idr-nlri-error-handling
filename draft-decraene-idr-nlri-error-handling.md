@@ -115,6 +115,9 @@ It MUST NOT be sent in UPDATE message not carrying the MP_REACH_NLRI attribute.
 To facilitate the determination of the NLRI field in an UPDATE message with a malformed attribute, the Treat-As-Withdraw SHALL be encoded as the very first path attribute in an UPDATE message, followed by the MP_REACH_NLRI attribute.
 
 
+If the AFI/SAFI specification allows for different NLRI encodings in the MP_UNREACH_NLRI, the simplest format MUST be used. For example {{RFC3107}} allows to use either the MPLS label stack originally sent or the static 0x800000 value. The latter is simpler in particular as the size is smaller and the number of labels to parse is reduced.
+
+
 The Treat-As-Withdraw attribute is generally useful as its encoding is simpler than the encoding of the MP_REACH_NLRI hence it maximizes the chances of handling an error in the MP_REACH_NLRI attribute using the treat-as-withdraw approach.
 It is specifically usuful for AFI/SAFI carrying non-key data in the NLRI such as {{RFC8277}}, {{I-D.ietf-idr-bgp-car}}, and {{I-D.ietf-idr-bgp-ct}} as these NLRI are longer and more complex, hence have a higher probability of error. In addition, in case of error they have a lower probability of being able to parse the full list of NLRIs.
 
