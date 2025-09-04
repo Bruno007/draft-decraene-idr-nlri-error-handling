@@ -12,10 +12,12 @@ area: rtg
 
 wg: Internet Engineering Task Force
 
+updates: 7606
+
 docname: draft-decraene-idr-nlri-error-handling-00
 
 
-title: Error handling of NLRI
+title: NLRI Error handling
 
 
 
@@ -37,6 +39,12 @@ author:
   email: bruno.decraene@orange.com
 
 
+  name: John G. Scudder
+
+  org: HPE
+
+  email: jgs@juniper.net
+
 
 normative:
 
@@ -48,6 +56,7 @@ normative:
 
 informative:
 
+  RFC3107:
   RFC8277:  
   I-D.ietf-idr-bgp-car:
   I-D.ietf-idr-bgp-ct:
@@ -81,44 +90,54 @@ Some specifications, such as {{RFC8277}}, {{I-D.ietf-idr-bgp-car}}, and {{I-D.ie
 The key field is typically the real NLRI.
 The non-key field carries extra data that is NLRI specific and hence not located in the BGP paths attributes for packing optimisation purpose.
 For example, {{RFC8277}} carries the Prefix in the key field and one label (stack) in the non-key field.
-As another example, {{I-D.ietf-idr-bgp-car}} defines a BGP CAR SAFI explicitly carrying Key Fiels and Non-Key fields typically as a list of TLVs.
+As another example, {{I-D.ietf-idr-bgp-car}} defines a BGP CAR SAFI explicitly carrying Key Fields and Non-Key Fields as a list of TLVs.
 In case of a BGP withdraw, the key is indicated in the MP_UNREACH_NLRI attribute to withdraw the unfeasible routes, while the non-key data is typically not encoded.
 
-This specification defines a new BGP non-transitive attribute, the "Treat-As-Withdraw Attribute" to carry NLRIs using the simple and existing format of MP_UNREACH_NLRI.
-This attribute is used to allow the treat-as-withdraw error-handling approach in case of an error in the MP_UNREACH_NLRI attribute preventing the parsing of its NLRIs.
+This specification defines a new BGP non-transitive attribute, the "Treat-As-Withdraw Attribute" to carry the NLRIs using the simple and existing format of MP_UNREACH_NLRI.
+This attribute is used to allow the treat-as-withdraw error-handling approach in case an error in the MP_UNREACH_NLRI attribute is preventing the parsing of its NLRIs.
 
 ## Requirements Language
 
 {::boilerplate bcp14-tagged}
 
 
-# Treat-As-Withdraw Attribute {#taw}
+# Treat-As-Withdraw Attribute {#format}
 
 
 The Treat-As-Withdraw attribute is an optional, non-transitive BGP path attribute with type code TBD1. 
-The format of the Treat-As-Withdraw attribute is the same as the format of the MP_UNREACH_NLRI as defined in section 4 of {{RFC4760}}
+The format of the Treat-As-Withdraw attribute is the same as the format of the MP_UNREACH_NLRI as defined in section 4 of {{RFC4760}}.
 
 
-# Sending the Treat-As-Withdraw Attribute {#Staw}
+# Sending the Treat-As-Withdraw Attribute {#sending}
 
 The Treat-As-Withdraw attribute may be sent in any BGP UPDATE message carrying the MP_REACH_NLRI attribute.
+It MUST NOT be sent in UPDATE message not carrying the MP_REACH_NLRI attribute.
 To facilitate the determination of the NLRI field in an UPDATE message with a malformed attribute, the Treat-As-Withdraw SHALL be encoded as the very first path attribute in an UPDATE message, followed by the MP_REACH_NLRI attribute.
 
 
-The Treat-As-Withdraw attribute is generally useful as its encoding is simpler than the encoding of the MP_REACH_NLRI hence it maximizes the change of handling an error in the MP_REACH_NLRI attribute using the treat-as-withdraw approach.
-It is specifically usuful for AFI/SAFI carrying non-key data in the NLRI such as {{RFC8277}}, {{I-D.ietf-idr-bgp-car}}, and {{I-D.ietf-idr-bgp-ct}} as these MP_REACH_NLRI attributes are more complex and hence have a higher probability of error and in case of error a lower probability of parsing all NLRIs.
+The Treat-As-Withdraw attribute is generally useful as its encoding is simpler than the encoding of the MP_REACH_NLRI hence it maximizes the chances of handling an error in the MP_REACH_NLRI attribute using the treat-as-withdraw approach.
+It is specifically usuful for AFI/SAFI carrying non-key data in the NLRI such as {{RFC8277}}, {{I-D.ietf-idr-bgp-car}}, and {{I-D.ietf-idr-bgp-ct}} as these NLRI are longer and more complex, hence have a higher probability of error. In addition, in case of error they have a lower probability of being able to parse the full list of NLRIs.
 
-# Receiving the Treat-As-Withdraw Attribute {#Rtaw}
+# Receiving the Treat-As-Withdraw Attribute {#receiving}
+
+In the case of an UPDATE message with a malformed MP_REACH_NLRI attribute and a correctly formed Treat-As-Withdraw attribute SHALL be handled using the approach of "treat-as-withdraw".
+The UPDATE message SHALL be handled as if received with only the Treat-As-Withdraw attribute -all others attributes being ignored- and the Treat-As-Withdraw Attribute handled as a MP_UNREACH_NLRI attribute.
+
+
+In the case of an UPDATE message with a correctly formed MP_REACH_NLRI attribute, the Treat-As-Withdraw attribute SHOULD be parsed and its lists of NLRI compared to the list of NLRI present in the MP_REACH_NLRI attribute.
+In case of difference, the Treat-As-Withdraw attribute SHALL be ignored.
+The reasoning is to fall back to the error handling pre-existing this document.
+However, because this reveals an error in either the Treat-As-Withdraw attribute or the MP_REACH_NLRI attribute, a BGP speaker must provide debugging facilities to permit issues caused by a malformed attribute to be diagnosed.
+At a minimum, such facilities must include logging an error listing the NLRI involved and containing the entire malformed UPDATE message when such an attribute is detected.
+The malformed UPDATE message should be analyzed, and the root cause should be investigated.
+
 
 A BGP speaker receiving a BGP UPDATE with a Treat-As-Withdraw attribute MUST remove this attribute from the UPDATE after having successfully parsed this BGP UPDATE.
 
-An UPDATE message with a correclty formed Treat-As-Withdraw attribute and a malformed MP_REACH_NLRI attribute SHALL be handled using the approach of "treat-as-withdraw".
-The UPDATE message SHALL be handled as if received with only the Treat-As-Withdraw attribute (all others attributes being ignored) and the Treat-As-Withdraw Attribute handled as a MP_UNREACH_NLRI attribute.
-
-# Attribute Error Handling
+# Attribute Error Handling {#error}
 
 The Treat-As-Withdraw attribute has the same format than the MP_UNREACH_NLRI and hence have the same malformed conditions.
-An UPDATE message with a malformed Treat-As-Withdraw attribute SHALL be handled using the approach of "attribute discard".
+As per {{receiving}}, an UPDATE message with a malformed Treat-As-Withdraw attribute is handled using the approach of "attribute discard".
 
 # IANA Considerations {#IANA}
 
