@@ -137,7 +137,7 @@ The malformed UPDATE message should be analyzed, and the root cause should be in
 
 A BGP speaker receiving a BGP UPDATE with a Treat-As-Withdraw attribute MUST remove this attribute from the UPDATE after having successfully parsed this BGP UPDATE.
 
-# Attribute Error Handling {#error}
+# Treat-As-Withdraw attribute Error Handling {#error}
 
 The Treat-As-Withdraw attribute has the same format than the MP_UNREACH_NLRI and hence have the same malformed conditions.
 As per {{receiving}}, an UPDATE message with a malformed Treat-As-Withdraw attribute is handled using the approach of "attribute discard".
