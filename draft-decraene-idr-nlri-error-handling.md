@@ -65,7 +65,7 @@ The treat-as-withdraw approach requires that the entire NLRI field of the MP_REA
 This is exacerbated by the use of non-key data within NLRI, which introduces parsing complexity and additional error cases.
 
 This specification defines a non-transitive BGP attribute, the "Treat-As-Withdraw Attribute", to encode NLRIs as per the format of MP_UNREACH_NLRI.
-This attribute is used to allow the treat-as-withdraw error-handling approach to be used in case an error in the MP_UNREACH_NLRI attribute prevents the parsing of its NLRIs.
+This attribute is used to allow the treat-as-withdraw error-handling approach to be used in case an error in the MP_REACH_NLRI attribute prevents the parsing of its NLRIs.
 
 This document updates RFC 7606 by mandating that the Treat-As-Withdraw Attribute appear before the MP_REACH_NLRI (or any other) attribute in an UPDATE message.
 --- middle
@@ -90,7 +90,9 @@ As another example, {{I-D.ietf-idr-bgp-car}} defines a BGP CAR SAFI explicitly c
 In case of a BGP withdraw, the key is indicated in the MP_UNREACH_NLRI attribute to withdraw the unfeasible routes, while the non-key data is typically not encoded.
 
 This specification defines a new BGP non-transitive attribute, the "Treat-As-Withdraw Attribute", to carry the NLRIs using the simple and existing format of MP_UNREACH_NLRI.
-This attribute is used to allow the treat-as-withdraw error-handling approach to be used when there is an error in the MP_UNREACH_NLRI attribute that prevents the parsing of its NLRIs.
+It is meant to be used for AFI/SAFI which encodes both a key field and a non-key field in the NLRIs of the MP_REACH_NLRI attribute, while encodes NLRI in a simpler way in the MP_UNREACH_NLRI attrbiute, e.g., with only the key field.
+For such AFI/SAFI, in case of an error in the MP_UNREACH_NLRI attribute preventing the identification of all NLRIs key, the parsing of the Treat-As-Withdraw attribute is more likely allow the identification of all NLRIs key.
+This attribute is used to allow the treat-as-withdraw error-handling approach to be used when there is an error in the MP_REACH_NLRI attribute that prevents the parsing of its NLRIs.
 
 ## Requirements Language
 
@@ -103,7 +105,7 @@ The format of the Treat-As-Withdraw attribute is the same as the format of the M
 
 # Sending the Treat-As-Withdraw Attribute {#sending}
 
-The Treat-As-Withdraw attribute may be sent in any BGP UPDATE message carrying the MP_REACH_NLRI attribute.
+The Treat-As-Withdraw attribute may be sent in a BGP UPDATE message carrying the MP_REACH_NLRI attribute.
 It MUST NOT be sent in an UPDATE message not carrying the MP_REACH_NLRI attribute.
 To facilitate the determination of the NLRI field in an UPDATE message with a malformed attribute, the Treat-As-Withdraw SHALL be encoded as the very first path attribute in an UPDATE message, followed by the MP_REACH_NLRI attribute. (This represents an update to Section 5.1 {{RFC7606}}, which mandated that the MP_REACH_NLRI come first.)
 The ordering of NLRIs within the Treat-As-Withdraw MUST be the same as their ordering within the corresponding MP_REACH_NLRI. <!-- This is only needed if the requirement to compare the TAW to the MP_REACH_NLRI during normal operation is retained. If we end up deciding on the other approach instead, i.e., ignore the TAW unless there is an error, this ordering requirement should be removed. The reasoning for imposing the ordering requirement is, if we're going to always compare them, we are adding work to the inner loop of the protocol, for every update, so we should minimize that work. Requiring identical ordering means the comparison can be guaranteed to be O(N) in the number of NLRI; if ordering isn't required, the worst-case is more like O(N^2) or in any case not as good as O(N). -->
@@ -146,6 +148,8 @@ The Treat-As-Withdraw attribute does not change BGP security considerations.
 An attacker having the ability to send or modify a BGP Message has the ability to withdraw any NLRI, with or without the Treat-As-Withdraw attribute.
 
 # Acknowledgements {#Acknowledgements}
+
+The authors of this specification thank Jeffrey Haas and Robert Raszuk for their review and comments.
 
 {: numbered="false"}
 
