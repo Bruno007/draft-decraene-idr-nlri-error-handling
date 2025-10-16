@@ -14,7 +14,7 @@ wg: Internet Engineering Task Force
 
 updates: 7606
 
-docname: draft-decraene-idr-nlri-error-handling-00
+docname: draft-decraene-idr-nlri-error-handling-01
 
 title: NLRI Error handling
 
@@ -47,6 +47,7 @@ normative:
   RFC2119:
   RFC4271:
   RFC4760:
+  RFC5492:
   RFC7606:
   RFC8174:  
 
@@ -103,6 +104,13 @@ This attribute is used to allow the treat-as-withdraw error-handling approach to
 The Treat-As-Withdraw attribute is an optional, non-transitive BGP path attribute with type code TBD1. 
 The format of the Treat-As-Withdraw attribute is the same as the format of the MP_UNREACH_NLRI as defined in Section 4 of {{RFC4760}}.
 
+# "Treat-As-Withdraw" Capability {#capability}
+
+To avoid the overhead of sending and receiving an attribute which is not understood by the BGP speaker receiving it, this document defines a new BGP Capability {{RFC5492}} "Treat-As-Withdraw", of type TBD2, and of length zero.
+A BGP speaker that supports the reception of the Treat-As-Withdraw Attribute {#receiving} SHOULD advertise the Treat-As-Withdraw Capability Advertisements.
+A BGP speaker MUST NOT send the Treat-As-Withdraw Attribute unless its peer has advertised the Treat-As-Withdraw Capability.
+Note however that failing to comply cause no harm. 
+
 # Sending the Treat-As-Withdraw Attribute {#sending}
 
 The Treat-As-Withdraw attribute may be sent in a BGP UPDATE message carrying the MP_REACH_NLRI attribute.
@@ -141,6 +149,12 @@ IANA is requested to allocate a new optional, non-transitive attribute called "T
 | Value | Code | Reference |
 +:------|:-----|:----------|
 | TBD1  | Treat-As-Withdraw |(this doc) |
+
+IANA is requested to allocate a new capability called "Treat-As-Withdraw" from the Capability Codes registry.
+
+| Value | Description | Reference |
++:------|:-----|:----------|
+| TBD2  | Treat-As-Withdraw |(this doc) |
 
 # Security Considerations {#Security}
 
