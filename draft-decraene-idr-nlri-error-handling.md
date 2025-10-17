@@ -120,9 +120,11 @@ The ordering of NLRIs within the NLRI_KEY_LIST MUST be the same as their orderin
 
 If the AFI/SAFI specification allows for different NLRI encodings in the MP_UNREACH_NLRI, the sender MUST use the simplest encoding. The receiver MUST accept any valid encoding. For example, {{RFC3107}} allows the use of either the MPLS label stack originally sent or the static 0x800000 value. The latter is simpler in that the size is smaller, fixed, and the number of labels to parse is minimized.
 
-The NLRI_KEY_LIST attribute is generally useful as its encoding is simpler than the encoding of the MP_REACH_NLRI, hence it maximizes the chances of handling an error in the MP_REACH_NLRI attribute using the treat-as-withdraw approach. 
+The NLRI_KEY_LIST attribute is generally useful as its encoding is simpler than the encoding of the MP_REACH_NLRI, hence it maximizes the chances of handling an error in the MP_REACH_NLRI attribute using the treat-as-withdraw approach.
+In particular the NLRI_KEY_LIST attribute does not carry the variable length "Network Address of Next Hop" field nor the "Length of Next Hop Network Address" which, if erroneous, trigger a BGP session reset as per {{RFC7606}}. 
 <!-- Furthermore, in some implementations, it may be the case that a different code path is used to generate the MP_UNREACH_NLRI encoding than is used to generate the MP_REACH_NLRI encoding. This can be seen as beneficial, analogous to "it's ideal if redundant parts come from different suppliers". -->
 It is specifically useful for AFI/SAFI carrying non-key data in the NLRI such as {{RFC8277}}, {{I-D.ietf-idr-bgp-car}}, and {{I-D.ietf-idr-bgp-ct}} as these NLRI are longer and more complex, hence have a higher probability of error. In addition, in case of error, they have a lower probability of being able to parse the full list of NLRIs.
+It is less useful when the NLRI encoding is the same for MP_REACH_NLRI and MP_UNREACH_NLRI.
 
 # Receiving the NLRI_KEY_LIST attribute {#receiving}
 
