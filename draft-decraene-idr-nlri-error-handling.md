@@ -102,7 +102,7 @@ This attribute is used to allow the treat-as-withdraw error-handling approach to
 # NLRI_KEY_LIST Capability {#capability}
 
 To avoid the overhead of sending and receiving an attribute which is not understood by the BGP speaker receiving it, this document defines a new BGP Capability {{RFC5492}} "NLRI_KEY_LIST", of type TBD2, and of length zero.
-A BGP speaker that supports the reception of the NLRI_KEY_LIST attribute {#receiving} SHOULD advertise the NLRI_KEY_LIST Capability Advertisements.
+A BGP speaker that supports the reception of the NLRI_KEY_LIST attribute ({{receiving}}) SHOULD advertise the NLRI_KEY_LIST Capability Advertisements.
 A BGP speaker SHOULD NOT send the NLRI_KEY_LIST attribute unless its peer has advertised the NLRI_KEY_LIST Capability. 
 Note however that if the attribute is sent, it will cause no harm (an incapable implementation will disregard the attribute, per the base BGP specification). A potential reason to send the attribute to a peer that has not advertised support is to avoid fragmenting a peer group. 
 
