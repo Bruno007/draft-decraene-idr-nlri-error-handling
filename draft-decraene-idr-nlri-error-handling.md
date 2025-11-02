@@ -40,7 +40,7 @@ author:
 
   org: HPE
 
-  email: jgs@juniper.net
+  email: jgs@bgp.nu
 
 normative:
 
