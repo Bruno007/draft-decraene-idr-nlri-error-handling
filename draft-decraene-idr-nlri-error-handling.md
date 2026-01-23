@@ -14,7 +14,7 @@ wg: Internet Engineering Task Force
 
 updates: 7606
 
-docname: draft-decraene-idr-nlri-error-handling-01
+docname: draft-decraene-idr-nlri-error-handling-02
 
 title: The Key List BGP Attribute for NLRI Error handling
 
@@ -54,9 +54,9 @@ normative:
 informative:
 
   RFC3107:
-  RFC8277:  
-  I-D.ietf-idr-bgp-car:
-  I-D.ietf-idr-bgp-ct:
+  RFC8277:
+  RFC9871:
+  RFC9832:
 
 --- abstract
 
@@ -83,11 +83,11 @@ However, as indicated in Section 3 of {{RFC7606}}, treat-as-withdraw can only be
 This typically means parsing errors in MP_REACH_NLRI cannot be handled by any means short of session reset.
 
 {{RFC4760}} allows the Border Gateway Protocol (BGP) to advertise general routing information in the Network Layer Reachability Information (NLRI) field of the UPDATE message.
-Some specifications, such as {{RFC8277}}, {{I-D.ietf-idr-bgp-car}}, and {{I-D.ietf-idr-bgp-ct}} carry both a key field and a non-key field in the NLRI.
+Some specifications, such as {{RFC8277}}, {{RFC9871}}, and {{RFC9832}} carry both a key field and a non-key field in the NLRI.
 The key field is typically the real NLRI.
 The non-key field carries extra data that is NLRI-specific and hence not located in the BGP path attributes for packing optimization purposes.
 For example, {{RFC8277}} carries the Prefix in the key field and one label (stack) in the non-key field.
-As another example, {{I-D.ietf-idr-bgp-car}} defines a BGP CAR SAFI explicitly carrying Key Fields and Non-Key Fields as a list of TLVs.
+As another example, {{RFC9871}} defines a BGP CAR SAFI explicitly carrying Key Fields and Non-Key Fields as a list of TLVs.
 In case of a BGP withdraw, the key is indicated in the MP_UNREACH_NLRI attribute to withdraw the unfeasible routes, while the non-key data is typically not encoded.
 
 This specification defines a new BGP non-transitive attribute, the "NLRI_KEY_LIST attribute", to carry the NLRIs using the simple and existing format of MP_UNREACH_NLRI.
@@ -117,15 +117,15 @@ The format of the NLRI_KEY_LIST attribute is the same as the format of the MP_UN
 
 The NLRI_KEY_LIST attribute may be sent in a BGP UPDATE message carrying the MP_REACH_NLRI attribute.
 It MUST NOT be sent in an UPDATE message not carrying the MP_REACH_NLRI attribute.
-To facilitate the determination of the NLRI key list in an UPDATE message with a malformed attribute, the NLRI_KEY_LIST SHALL be encoded as the very first path attribute in an UPDATE message, followed by the MP_REACH_NLRI attribute. (This represents an update to Section 5.1 {{RFC7606}}, which mandated that the MP_REACH_NLRI come first.)
-TThe list and the ordering of NLRIs within the NLRI_KEY_LIST MUST be the same as the list and their ordering within the corresponding MP_REACH_NLRI. <!-- This is only needed if the requirement to compare the TAW to the MP_REACH_NLRI during normal operation is retained. If we end up deciding on the other approach instead, i.e., ignore the TAW unless there is an error, this ordering requirement should be removed. The reasoning for imposing the ordering requirement is, if we're going to always compare them, we are adding work to the inner loop of the protocol, for every update, so we should minimize that work. Requiring identical ordering means the comparison can be guaranteed to be O(N) in the number of NLRI; if ordering isn't required, the worst-case is more like O(N^2) or in any case not as good as O(N). -->
+To facilitate the parsing of the NLRI_KEY_LIST attribute in an UPDATE message with a malformed attribute, the NLRI_KEY_LIST SHALL be encoded as the very first path attribute in an UPDATE message, followed by the MP_REACH_NLRI attribute. (This represents an update to Section 5.1 {{RFC7606}}, which mandated that the MP_REACH_NLRI come first.)
+The list and the ordering of NLRIs within the NLRI_KEY_LIST MUST be the same as the list and their ordering within the corresponding MP_REACH_NLRI. <!-- This is only needed if the requirement to compare the TAW to the MP_REACH_NLRI during normal operation is retained. If we end up deciding on the other approach instead, i.e., ignore the TAW unless there is an error, this ordering requirement should be removed. The reasoning for imposing the ordering requirement is, if we're going to always compare them, we are adding work to the inner loop of the protocol, for every update, so we should minimize that work. Requiring identical ordering means the comparison can be guaranteed to be O(N) in the number of NLRI; if ordering isn't required, the worst-case is more like O(N^2) or in any case not as good as O(N). -->
 
 If the AFI/SAFI specification allows for different NLRI encodings in the MP_UNREACH_NLRI, the sender MUST use the simplest encoding. The receiver MUST accept any valid encoding. For example, {{RFC3107}} allows the use of either the MPLS label stack originally sent or the static 0x800000 value. The latter is simpler in that the size is smaller, fixed, and the number of labels to parse is minimized.
 
 The NLRI_KEY_LIST attribute is generally useful as its encoding is simpler than the encoding of the MP_REACH_NLRI, hence it maximizes the chances of handling an error in the MP_REACH_NLRI attribute using the treat-as-withdraw approach.
 In particular the NLRI_KEY_LIST attribute does not carry the variable length "Network Address of Next Hop" field nor the "Length of Next Hop Network Address" which, if erroneous, trigger a BGP session reset as per {{RFC7606}}. 
 <!-- Furthermore, in some implementations, it may be the case that a different code path is used to generate the MP_UNREACH_NLRI encoding than is used to generate the MP_REACH_NLRI encoding. This can be seen as beneficial, analogous to "it's ideal if redundant parts come from different suppliers". -->
-It is notably, although not exclusively, useful for AFI/SAFI carrying non-key data in the NLRI such as {{RFC8277}}, {{I-D.ietf-idr-bgp-car}}, and {{I-D.ietf-idr-bgp-ct}} as these NLRI are longer and more complex, hence have a higher probability of error. In addition, in case of error, they have a lower probability of being able to parse the full list of NLRIs.
+It is notably, although not exclusively, useful for AFI/SAFI carrying non-key data in the NLRI such as {{RFC8277}}, {{RFC9871}}, and {{RFC9871}} as these NLRI are longer and more complex, hence have a higher probability of error. In addition, in case of error, they have a lower probability of being able to parse the full list of NLRIs.
 It is less useful when the NLRI encoding is the same for MP_REACH_NLRI and MP_UNREACH_NLRI.
 
 ## Receiving the NLRI_KEY_LIST attribute {#receiving}
