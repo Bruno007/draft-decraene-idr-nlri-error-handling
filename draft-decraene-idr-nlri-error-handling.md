@@ -91,8 +91,9 @@ As another example, {{RFC9871}} defines a BGP CAR SAFI explicitly carrying Key F
 In case of a BGP withdraw, the key is indicated in the MP_UNREACH_NLRI attribute to withdraw the unfeasible routes, while the non-key data is typically not encoded.
 
 This specification defines a new BGP non-transitive attribute, the "NLRI_KEY_LIST attribute", to carry the NLRIs using the simple and existing format of MP_UNREACH_NLRI.
-Its most important use is for AFI/SAFI whose NLRI are considered to be at elevated risk of malformation. An example are AFI/SAFI that encode both a key field and a non-key field in the NLRIs of the MP_REACH_NLRI attribute, while encodes NLRI in a simpler way in the MP_UNREACH_NLRI attrbiute, e.g., with only the key field.
-For such AFI/SAFI, in case of an error in the MP_UNREACH_NLRI attribute preventing the identification of all NLRIs key, the parsing of the NLRI_KEY_LIST attribute is more likely allow the identification of all NLRIs key.
+Its most important use is for AFI/SAFI whose NLRI are considered to be at elevated risk of malformation.
+An example are AFI/SAFI that sends additional fields and data in the NLRI of the MP_REACH_NLRI than in the NLRI field of MP_UNREACH_NLRI. This makes parsing the NLRIs in the MP_REACH_NLRI harder and more error prone.
+For such AFI/SAFI, in case of an error in the MP_REACH_NLRI attribute preventing the identification of all NLRIs, the parsing of the NLRI_KEY_LIST attribute is more likely allow the identification of all NLRIs so as to craft the MP_UNREACH_NLRI required for the  treat-as-withdraw approach.
 This attribute is used to allow the treat-as-withdraw error-handling approach to be used when there is an error in the MP_REACH_NLRI attribute that prevents the parsing of its NLRIs.
 
 ## Requirements Language
@@ -125,7 +126,7 @@ If the AFI/SAFI specification allows for different NLRI encodings in the MP_UNRE
 The NLRI_KEY_LIST attribute is generally useful as its encoding is simpler than the encoding of the MP_REACH_NLRI, hence it maximizes the chances of handling an error in the MP_REACH_NLRI attribute using the treat-as-withdraw approach.
 In particular the NLRI_KEY_LIST attribute does not carry the variable length "Network Address of Next Hop" field nor the "Length of Next Hop Network Address" which, if erroneous, trigger a BGP session reset as per {{RFC7606}}. 
 <!-- Furthermore, in some implementations, it may be the case that a different code path is used to generate the MP_UNREACH_NLRI encoding than is used to generate the MP_REACH_NLRI encoding. This can be seen as beneficial, analogous to "it's ideal if redundant parts come from different suppliers". -->
-It is notably, although not exclusively, useful for AFI/SAFI carrying non-key data in the NLRI such as {{RFC8277}}, {{RFC9871}}, and {{RFC9871}} as these NLRI are longer and more complex, hence have a higher probability of error. In addition, in case of error, they have a lower probability of being able to parse the full list of NLRIs.
+It is notably, although not exclusively, useful for AFI/SAFI sending a bigger NLRI in MP_REACH_NLRI than in MP_UNREACH_NLRI such as {{RFC8277}}, {{RFC9871}}, and {{RFC9871}} as these NLRI are longer and more complex, hence have a higher probability of error. In addition, in case of error, they have a lower probability of being able to parse the full list of NLRIs.
 It is less useful when the NLRI encoding is the same for MP_REACH_NLRI and MP_UNREACH_NLRI.
 
 ## Receiving the NLRI_KEY_LIST attribute {#receiving}
