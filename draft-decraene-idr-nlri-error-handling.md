@@ -14,7 +14,7 @@ wg: Internet Engineering Task Force
 
 updates: 7606
 
-docname: draft-decraene-idr-nlri-error-handling-02
+docname: draft-decraene-idr-nlri-error-handling-03
 
 title: The Key List BGP Attribute for NLRI Error handling
 
@@ -115,8 +115,14 @@ The format of the NLRI_KEY_LIST attribute is the same as the format of the MP_UN
 
 ## Sending the NLRI_KEY_LIST attribute {#sending}
 
-The NLRI_KEY_LIST attribute may be sent in a BGP UPDATE message carrying the MP_REACH_NLRI attribute.
-It MUST NOT be sent in an UPDATE message not carrying the MP_REACH_NLRI attribute.
+The NLRI_KEY_LIST attribute may be sent in a BGP UPDATE message carrying the MP_REACH_NLRI attribute with a least one reachable Network Layer Reachability Information (NLRI).
+
+It MUST NOT be sent:
+
+- more than once in an UPDATE message;
+- in an UPDATE message not carrying the MP_REACH_NLRI attribute;
+- in an UPDATE message with an MP_REACH_NLRI attribute with no reachable Network Layer Reachability Information (NLRI).
+
 To facilitate the parsing of the NLRI_KEY_LIST attribute in an UPDATE message with a malformed attribute, the NLRI_KEY_LIST SHALL be encoded as the very first path attribute in an UPDATE message, followed by the MP_REACH_NLRI attribute. (This represents an update to Section 5.1 {{RFC7606}}, which mandated that the MP_REACH_NLRI come first.)
 The list and the ordering of NLRIs within the NLRI_KEY_LIST MUST be the same as the list and their ordering within the corresponding MP_REACH_NLRI. <!-- This is only needed if the requirement to compare the TAW to the MP_REACH_NLRI during normal operation is retained. If we end up deciding on the other approach instead, i.e., ignore the TAW unless there is an error, this ordering requirement should be removed. The reasoning for imposing the ordering requirement is, if we're going to always compare them, we are adding work to the inner loop of the protocol, for every update, so we should minimize that work. Requiring identical ordering means the comparison can be guaranteed to be O(N) in the number of NLRI; if ordering isn't required, the worst-case is more like O(N^2) or in any case not as good as O(N). -->
 
@@ -179,7 +185,7 @@ An attacker having the ability to send or modify a BGP message has the ability t
 
 # Acknowledgements {#Acknowledgements}
 
-The authors of this specification thank Jeffrey Haas and Robert Raszuk for their review and comments.
+The authors of this specification thank Jeffrey Haas, Robert Raszuk and Donatas Abraitis for their review and comments.
 
 {: numbered="false"}
 
